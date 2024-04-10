@@ -1,0 +1,77 @@
+
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+    <meta charset="UTF-8">
+    <title>Emotion-Guided TTS: Natural-Language-Prompted and Guided Mixed Emotion TTS with Diffusion</title>
+    <link href="./index.css" rel="stylesheet" />
+</head>
+<body>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <div id="app">
+        <h1 class="title">Emotion-Guided TTS: Natural-Language-Prompted and Guided Mixed Emotion TTS with Diffusion</h1>
+        <div>We use speak id 15. w is the guidance scale.</div>
+        <div class="options">
+            <div class="option" v-for="k in keys" :key="k['title']" :class="{ selected: k['title'] == selectedKeyTitle }" @click="changeKeyTitle(k['title'])">"{{ k['sent'] }}"</div>
+        </div>
+        <div class="block">
+            <h3>MOS Comparison</h3>
+            <div class="desc">分别给下面的sample打分，5-point scale (5 for excellent -- 非常自然, 4 for good -- 还是挺自然的但是音质有问题或者略微有点生硬, 3 for fair -- 能听清内容但是音质有点问题, 2 for poor -- 音质问题很大, and 1 for bad -- 听不清内容而且音质也很糟糕)，不要管音量，调到能听清的程度即可，不要打太低 TAT</div>
+            <div class="section">
+                <div class="gd" v-for="(mv, mk, idx) in mos[selectedKeyTitle]">
+                    <span>Sample {{ idx }}</span>
+                    <audio :src="mv" controls></audio>
+                </div>
+            </div>
+        </div>
+        <!-- <h2>Ablation Study</h2> -->
+        <div class="block">
+            <h3>Intensity Control</h3>
+            <div class="desc">分别对w=0, 1, 2, 5, 10, 20进行自然度打分（如果感受不到明显的自然度变化可以打一样的分），并且判断是否随着w的增大，情感强度也有增加。判断一下从w最小是多少开始有明显的失真。</div>
+            <div>
+                <div v-for="(eev, ee) in guidance_distortion[selectedKeyTitle]" :key="ee">
+                    <h4>{{ ee }}</h4>
+                    <div class="section">
+                        <div class="gd" :key="gd" v-for="gd in eev">
+                            <span>w = {{ gd['gs'] }}</span>
+                            <audio :src="gd['link']" controls></audio>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="block">
+            <h3>Natural Language Control</h3>
+            <div>We use guidance scale w = 1.</div>
+            <h4>Unseen Descriptions</h4>
+            <div class="desc">这个和上面Intensity Control部分不同情绪栏目下的的w=1的音频进行比较，对MOS自然度差距进行打分（比如4.5 - 4 = 0.5），分别对情感描述与生成音频对应的匹配度进行打分。</div>
+            <div class="section">
+                <div class="gd" :key="n" v-for="n in nlc[selectedKeyTitle]">
+                    <span>{{ n['ne'] }}</span>
+                    <audio :src="n['link']" controls></audio>
+                </div>
+            </div>
+        </div>
+        <div class="block">
+            <h3>Mixed Emotions</h3>
+            <div>We use guidance scale w = 1.</div>
+            <div class="desc">下面的数字代表了情绪标签的混合比例，如Happy_Angry下0.8_0.2代表Happy:Angry的比例是8:2。判断下面哪个比例最好地混合了以上的情绪。</div>
+            <div>
+                <div v-for="(mev, me) in mixed[selectedKeyTitle]" :key="me">
+                    <h4>{{ me }}</h4>
+                    <div class="section">
+                        <div class="gd" :key="m" v-for="m in mev">
+                            <span>{{ (1 - m['i']).toFixed(1) }}_{{ m['i'].toFixed(1) }}</span>
+                            <audio :src="m['link']" controls></audio>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="./script.js"></script>
+</body>
+</html>
+
